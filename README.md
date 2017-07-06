@@ -6,4 +6,12 @@ The application follows most of the default file layout of Laravel with the
 exception of the model files which is placed under /app/Models instead of 
 the default /app folder. 
 
+# Running the application with Valet
+
+* Clone the repository
+* composer install
+* php artisan key:generate
+* Install .env
+* You can then access the api via http://stitchlite.dev/api/products
+
 
