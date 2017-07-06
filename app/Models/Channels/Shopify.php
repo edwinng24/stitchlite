@@ -8,7 +8,7 @@ use App\Models\StitchLiteProduct;
 class Shopify extends SalesChannel
 {
 	
-	public function getProducts($ch) {
+	public function syncProducts($ch) {
 
 		$status = self::SYNC_OK;
 		$message = "OK";
@@ -33,18 +33,14 @@ class Shopify extends SalesChannel
                               foreach ($res['products'] as $product) {
                                     $title = $product['title'];
                                     foreach ($product['variants'] as $variant) {
-                                          $name = $title." / ".$variant['title'];
-                                          $sku = $variant['sku'];
-                                          $quantity = $variant['inventory_quantity'];
-                                          $price = $variant['price'];
-                                          StitchLiteProduct::updateOrCreate(
-                                                ["sku" => $sku, "channel_id" => $this->id],
-                                                [
-                                                      "name" => $name, 
-                                                      "quantity" => $quantity, 
-                                                      "price" => $price, 
-                                                ]
-                                          );
+                                          $data = [
+                                                'name' => $title." / ".$variant['title'],
+                                                'sku' => $variant['sku'],
+                                                'quantity' => $variant['inventory_quantity'],
+                                                'price' => $variant['price'],
+                                                'channel_id' => $this->id, 
+                                          ];
+                                          $this->_createOrUpdateProduct($data);
                                     }
                                     
                               }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\SalesChannel;
+use App\Models\StitchLiteProduct;
+use Illuminate\Support\Facades\DB;
 
 class ApiController extends Controller
 {
@@ -12,6 +14,56 @@ class ApiController extends Controller
 
 
         return SalesChannel::sync();
+    }
+
+
+    public function products() {
+
+        /*$products = StitchLiteProduct::all();
+        foreach($products as $idx => $product) {
+            $sc = $product->sales_channel;
+            $products[$idx]->sales_channel_name = $sc->name;
+        }
+        return $products;*/
+        $ps = DB::table('stitch_lite_products')
+                        ->leftJoin('sales_channels', 'sales_channel_id', '=', 'sales_channels.id')
+                        //->orderBy('stitch_lite_products.updated_at', 'desc')
+                        ->select('stitch_lite_products.stitch_lite_product_ids_id as id', 'stitch_lite_products.name', 'sku', 'quantity', 'price', 'sales_channels.name as channel')
+                        ->get();
+        return $this->_genResults($ps);
+
+    }
+
+    public function product($id) {
+        $ps = DB::table('stitch_lite_products')
+                        ->leftJoin('sales_channels', 'sales_channel_id', '=', 'sales_channels.id')
+                        ->where('stitch_lite_product_ids_id', '=', $id)
+                        ->select('stitch_lite_product_ids_id as id', 'stitch_lite_products.name', 'sku', 'quantity', 'price', 'sales_channels.name as channel')
+                        ->get();
+
+        return $this->_genResults($ps);
+
+    }
+
+    protected function _genResults($ps) {
+
+        $r = []; $res = [];
+        foreach ($ps as $p) {
+            $r[$p->id][] = 
+                                [
+                                'sku' => $p->sku,
+                                'name' => $p->name,
+                                'quantity' => $p->quantity,
+                                'price' => $p->price,
+                                'channel' => $p->channel
+                                ];
+        }
+        foreach ($r as $id => $channels){
+            $res[] = [
+            'id' => $id,
+            'channels' => $channels ];
+        }
+        return $res;
     }
 
     /**

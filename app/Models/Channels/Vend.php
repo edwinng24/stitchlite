@@ -10,7 +10,7 @@ class Vend extends SalesChannel
 
 	const DOMAIN = "https://edwinphpstore.vendhq.com";
 	
-	public function getProducts($ch) {
+	public function syncProducts($ch) {
 
 		curl_setopt($ch, CURLOPT_POST, false);
 		$token = $this->_getAccessToken($ch);
@@ -35,19 +35,14 @@ class Vend extends SalesChannel
                 	if ($handle == "vend-discount") {
                 		continue;
                 	}
-                	$name = $product['name'];
-                	$sku = $product['sku'];
-                	$quantity = $product['inventory'][0]['count'];
-                	$price = $product['price'];
-                    StitchLiteProduct::updateOrCreate(
-                        ["sku" => $sku, "channel_id" => $this->id],
-                        [
-                              "name" => $name, 
-                              "quantity" => $quantity, 
-                              "price" => $price, 
-                        ]
-                    );
-                        
+					$data = [
+                            'name' => $product['name'],
+                            'sku' => $product['sku'],
+                            'quantity' => $product['inventory'][0]['count'],
+                            'price' => $product['price'],
+                            'channel_id' => $this->id, 
+                    ];
+                    $this->_createOrUpdateProduct($data);
                 }
             }
       }

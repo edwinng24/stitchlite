@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateStitchLiteProductsTable extends Migration
+class StitchLiteProductId extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,10 @@ class CreateStitchLiteProductsTable extends Migration
      */
     public function up()
     {
-        Schema::create('stitch_lite_products', function (Blueprint $table) {
+        //
+        Schema::create('stitch_lite_product_ids', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('sku');
-            $table->string('name');
-            $table->integer('quantity');
-            $table->float('price');
-            $table->integer('channel_id');
             $table->timestamps();
-            $table->unique(['sku', 'channel_id']);
         });
     }
 
@@ -32,6 +27,6 @@ class CreateStitchLiteProductsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('stitch_lite_products');
+        //
     }
 }

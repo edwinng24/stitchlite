@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Models\StitchLiteProductId;
 
 abstract class SalesChannel extends Model
 {
@@ -27,7 +28,7 @@ abstract class SalesChannel extends Model
 	        	$scm = DB::table('sales_channels')->where('name', $sc)->first();
 	            $salesChannel = new $fsc(['id' => $scm->id]);
 
-	            $res = $salesChannel->getProducts($ch);
+	            $res = $salesChannel->syncProducts($ch);
 	            if ($res['status'] == self::SYNC_ERROR) {
 	            	$syncok = self::SYNC_ERROR;
 	            	$message .= $res['message'];
@@ -45,7 +46,55 @@ abstract class SalesChannel extends Model
 		return $data;
 
 	}
+
+	protected function _getProductId($sku) {
+
+		$prodId = '';
+		$prod = StitchLiteProduct::where('sku', '=', $sku)->first();
+		if ($prod == null) {
+			$prodIdO = StitchLiteProductId::create();
+			$prodId = $prodIdO->id;
+		}
+		else {
+			$prodId = $prod->stitch_lite_product_ids_id;
+		}
+		return $prodId;
+	}
+
+	protected function _createOrUpdateProduct($data) {
+
+		$prodId = $this->_getProductId($data['sku']);
+		$prod = StitchLiteProduct::where([
+				[ "stitch_lite_product_ids_id", '=', $prodId],
+				[ "sku", '=', $data['sku']],
+				[ "sales_channel_id", '=', $data['channel_id'] ]
+
+			])->first();
+		if (!is_null($prod)) {
+			$prod->name = $data['name'];
+			$prod->quantity = $data['quantity'];
+			$prod->price = $data['price'];
+			$prod->save();
+		}
+		else {
+          StitchLiteProduct::create(
+                [
+                "stitch_lite_product_ids_id" => $prodId,
+                "sku" => $data['sku'], 
+                "sales_channel_id" => $data['channel_id'],
+                "name" => $data['name'], 
+                "quantity" => $data['quantity'], 
+                "price" => $data['price'], 
+                ]
+          );
+        }  
+	}
+
+	public function products() {
+
+		return $this->hasMany(StitchLiteProduct::class);
+	}
 	
 
-	abstract public function getProducts($ch);
+	abstract function syncProducts($ch);
 }

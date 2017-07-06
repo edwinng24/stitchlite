@@ -16,3 +16,7 @@ Route::get('/', function () {
 });
 
 Route::get("/api/sync", 'ApiController@sync');
+
+Route::get("/api/products", 'ApiController@products');
+
+Route::get("/api/product/{product}", 'ApiController@product');
