@@ -13,6 +13,37 @@ abstract class SalesChannel extends Model
 	const SYNC_ERROR = 2; 
 	protected $fillable = ['id'];
 
+
+/*
+
+      To sync Stitch lite product quantities to the various channels, we will probably 
+      need do two passes to the data retrieved from the channels. The approach works well
+      if we assume the quantity in the channels will always be smaller or equal to the 
+      quantity in internal db.
+
+      1. Scan the database to build a data structure like this
+
+      $inv[$sku]['old_quantity'] = Quantity of the $sku in DB
+
+      2. For each of the channel data fetched, update the above data structure so that
+
+      $inv[$sku]['delta_quantity'] += $inv[$sku]['old_quantity'] - $channel_quantity
+
+      This is the first pass.
+
+      3. On the second pass, much of the operations is like the current sync implementation with
+      the following difference:
+
+       a) The quantity used in the db update will be
+
+           $quantity = $inv[$sku]['old_quantity'] - $inv[$sku]['delta_quantity'];
+
+       b) If the $quantity value from a) is different from the quantity fetched from channel,
+          update the channel inventory # to the new value using the channel API
+
+      */
+
+	// if sku is changed on the channel, the old sku's will remain in the db
 	static public function sync() {
 
 		$syncok = self::SYNC_OK;
@@ -61,6 +92,9 @@ abstract class SalesChannel extends Model
 		return $prodId;
 	}
 
+	/* if we want to minimize write to db, we can consider
+       checking if the name, quantity, price, sku has changed 
+       before updating the db */
 	protected function _createOrUpdateProduct($data) {
 
 		$prodId = $this->_getProductId($data['sku']);
