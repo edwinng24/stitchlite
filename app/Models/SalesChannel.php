@@ -105,10 +105,20 @@ abstract class SalesChannel extends Model
 
 			])->first();
 		if (!is_null($prod)) {
-			$prod->name = $data['name'];
+			DB::table('stitch_lite_products')
+			->where([
+				'stitch_lite_product_ids_id' => $prodId,
+				'sales_channel_id' => $data['channel_id']
+			    ])
+			->update([
+				'name' => $data['name'],
+				'quantity' => $data['quantity'],
+				'price' => $data['price']
+				]);
+			/*$prod->name = $data['name'];
 			$prod->quantity = $data['quantity'];
 			$prod->price = $data['price'];
-			$prod->save();
+			$prod->save();*/
 		}
 		else {
           StitchLiteProduct::create(
