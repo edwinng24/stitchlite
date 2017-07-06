@@ -7,7 +7,8 @@ use App\Models\StitchLiteProduct;
 
 class Shopify extends SalesChannel
 {
-	
+	const DOMAIN = "edwin-php-store.myshopify.com";
+
 	public function syncProducts($ch) {
 
 		$status = self::SYNC_OK;
@@ -20,11 +21,12 @@ class Shopify extends SalesChannel
       		$message = "Missing Shopify Credentials";
       	}
       	else {
-      		$url = "https://".$apikey.":".$apipasswd."@edwin-php-store.myshopify.com/admin/products.json?fields=title,variants";
+      		$url = "https://".$apikey.":".$apipasswd."@".self::DOMAIN."/admin/products.json?fields=title,variants";
       		curl_setopt($ch, CURLOPT_URL, $url);
       		$content = curl_exec($ch);
       		if ($content) {
                         $res = json_decode($content, true);
+                        //dd($res);
                         if ($res == null || ($res['errors'] ?? "") != "") {
                               $status = self::SYNC_ERROR;
                               $message = $res == null ? "Invalid Shopify Server Response" : $res['errors'];
